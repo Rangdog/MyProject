@@ -40,6 +40,7 @@ INSTALLED_APPS = [
     'rest_framework',
     'knox',
     'login',
+    'base',
     'django_rest_passwordreset',
 ]
 

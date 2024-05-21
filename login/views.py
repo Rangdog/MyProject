@@ -1,6 +1,6 @@
 from django.shortcuts import render
 
-from rest_framework import permissions
+from rest_framework import permissions, generics
 from .serializers import *
 from .models import *
 from rest_framework.response import Response
