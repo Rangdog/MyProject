@@ -31,3 +31,61 @@ class ProductSerializer(serializers.ModelSerializer):
             return obj.categoryId.categoryName
         except:
             return None
+
+
+class BrandSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Brands
+        fields = (
+            'brandName',
+        )
+
+
+class CategorySerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Categories
+        fields = (
+            'categoryName',
+        )
+
+
+class OrderSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Orders
+        fields = (
+            'orderDate',
+            'totalAmount',
+            'status',
+            'userId'
+        )
+
+
+class OrderDetailsSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = OrderDetails
+        fields = (
+            'quantity',
+            'price',
+            'orderId',
+            'productsId'
+        )
+
+
+class CartItemSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = CartItems
+        fields = (
+            'quantity',
+            'userId',
+            'productId'
+        )
+
+
+class PaymentSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Payments
+        fields = (
+            'paymentDate',
+            'amount',
+            'paymentMethod',
+        )
