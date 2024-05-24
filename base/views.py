@@ -6,7 +6,13 @@ from .models import *
 from rest_framework.permissions import IsAuthenticated
 from knox.auth import TokenAuthentication
 from rest_framework.response import Response
+from rest_framework.exceptions import ValidationError
 # Create your views here.
+
+
+def product_exists_in_cart(product_id, user_id):
+    print(user_id)
+    return CartItems.objects.filter(userId__id=user_id, productId__id=product_id).exists()
 
 
 class ProductMixinView(mixins.ListModelMixin, mixins.RetrieveModelMixin, generics.GenericAPIView):
@@ -53,6 +59,43 @@ class CartItemMixinView(generics.GenericAPIView, mixins.CreateModelMixin):
             productId = serializer.validated_data.get('productId')
             product = Products.objects.get(pk=productId)
             userId = CustomeUser.objects.get(pk=request.user.id)
-            cart_item = CartItems.objects.create(
-                userId=userId, productId=product, quantity=1)
-            return Response(cart_item, status=201)
+            if product_exists_in_cart(productId, request.user.id):
+                cart_item = CartItems.objects.get(
+                    userId=userId, productId=product)
+                cart_item.quantity += 1
+                cart_item.save()
+            else:
+                cart_item = CartItems.objects.create(
+                    userId=userId, productId=product, quantity=1)
+            cart_item_serializer = GetCartItemSerializer(cart_item)
+            return Response(cart_item_serializer.data, status=201)
+
+
+class CartItemDeleteView(generics.DestroyAPIView):
+    queryset = CartItems.objects.all()
+    serializer_class = GetCartItemSerializer
+
+
+class CaritemIncreaseQuantityView(generics.UpdateAPIView):
+    queryset = CartItems.objects.all()
+    serializer_class = GetCartItemSerializer
+    lookup_field = 'pk'
+
+    def perform_update(self, serializer):
+        instance = serializer.instance
+        instance.quantity += 1
+        instance.save()
+
+
+class CaritemDecreaseQuantityView(generics.UpdateAPIView):
+    queryset = CartItems.objects.all()
+    serializer_class = GetCartItemSerializer
+    lookup_field = 'pk'
+
+    def perform_update(self, serializer):
+        instance = serializer.instance
+        if (instance.quantity > 1):
+            instance.quantity -= 1
+            instance.save()
+        else:
+            raise ValidationError("Không thể giảm hơn 1")
