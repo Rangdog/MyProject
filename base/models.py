@@ -25,6 +25,8 @@ class Orders(models.Model):
     totalAmount = models.DecimalField(
         max_digits=20, decimal_places=2, default=0)
     status = models.CharField(max_length=20)
+    address = models.CharField(max_length=1000, default="")
+    number = models.CharField(max_length=12, default="")
 
 
 class Products(models.Model):
