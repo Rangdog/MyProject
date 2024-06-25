@@ -56,6 +56,6 @@ class CartItems(models.Model):
 
 class Payments(models.Model):
     orderId = models.ForeignKey(Orders, on_delete=models.CASCADE)
-    paymentDate = models.DateTimeField()
+    paymentDate = models.DateTimeField(null=True, blank=True)
     amount = models.DecimalField(max_digits=10, decimal_places=2)
     paymentMethod = models.CharField(max_length=50)

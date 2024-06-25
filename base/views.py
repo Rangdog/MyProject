@@ -1,12 +1,13 @@
 from django.shortcuts import render
 
-from rest_framework import generics, mixins, permissions
+from rest_framework import generics, mixins, permissions, status
 from .serializers import *
 from .models import *
 from rest_framework.permissions import IsAuthenticated
 from knox.auth import TokenAuthentication
 from rest_framework.response import Response
 from rest_framework.exceptions import ValidationError
+from django.db.transaction import atomic, set_rollback
 # Create your views here.
 
 
@@ -99,3 +100,38 @@ class CaritemDecreaseQuantityView(generics.UpdateAPIView):
             instance.save()
         else:
             raise ValidationError("Không thể giảm hơn 1")
+
+
+class CreateOrderView(generics.GenericAPIView):
+    @atomic
+    def post(self, request, *args, **kwargs):
+        data = request.data
+        address = data.get('address', "")
+        number = data.get('number', "")
+        total = data.get('total', 0)
+        list_products = data.get('product', None)
+        payment_method = data.get('paymentMethod', 0)
+        try:
+            order = Orders.objects.create(
+                userId=CustomeUser.objects.get(pk=request.user.id),
+                totalAmount=total,
+                status="Chờ xác nhận",
+                address=address,
+                number=number,
+            )
+            Payments.objects.create(
+                orderId=order, amount=total, paymentMethod=payment_method)
+            for i in list_products:
+                OrderDetails.objects.create(
+                    orderId=order,
+                    productsId=Products.objects.get(pk=i['product']['id']),
+                    quantity=i['quantity'],
+                    price=float(i['quantity']) * float(i['product']['price'])
+                )
+            CartItems.objects.filter(
+                userId=CustomeUser.objects.get(pk=request.user.id)).delete()
+            return Response("Thành công", status=status.HTTP_200_OK)
+        except Exception as e:
+            set_rollback(True)
+            print(e)
+            return Response(f"Lỗi: {e}", status=status.HTTP_400_BAD_REQUEST)

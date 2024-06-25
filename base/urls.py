@@ -11,5 +11,6 @@ urlpatterns = [
     path('cartitemincreasequantity/<int:pk>/',
          views.CaritemIncreaseQuantityView.as_view()),
     path('cartitemdecreasequantity/<int:pk>/',
-         views.CaritemDecreaseQuantityView.as_view())
+         views.CaritemDecreaseQuantityView.as_view()),
+    path('createorder/', views.CreateOrderView.as_view())
 ]
